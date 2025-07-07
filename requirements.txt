@@ -1,0 +1,43 @@
+# Core Flask and extensions
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.3
+Flask-Migrate==4.0.5
+Flask-WTF==1.1.1
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+
+# Database
+SQLAlchemy==2.0.21
+psycopg2-binary==2.9.7
+
+# Background tasks
+celery==5.3.1
+
+# Payment processing
+stripe==6.6.0
+
+# Email
+Flask-Mail==0.9.1
+
+# Security
+PyJWT==2.8.0
+bcrypt==4.0.1
+
+# File handling and media
+Pillow==10.0.1
+
+# Video processing
+ffmpeg-python==0.2.0
+
+# AI and TTS
+openai-whisper==20231117
+gTTS==2.3.2
+
+# Environment and config
+python-dotenv==1.0.0
+gunicorn==21.2.0
+
+# Utilities
+requests==2.31.0
+python-dateutil==2.8.2 
