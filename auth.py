@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import secrets
 import re
 from models import db, User, EmailVerification, PasswordReset, UserSession, UsageLog
-from forms import LoginForm, RegistrationForm, PasswordResetRequestForm, PasswordResetForm
 from utils import send_email, log_usage
 
 auth_bp = Blueprint('auth', __name__)
@@ -65,12 +64,11 @@ def register():
             return jsonify({'error': 'Username already taken'}), 400
         
         # Create user
-        user = User(
-            email=email,
-            username=username,
-            first_name=first_name,
-            last_name=last_name
-        )
+        user = User()
+        user.email = email
+        user.username = username
+        user.first_name = first_name
+        user.last_name = last_name
         user.set_password(password)
         
         db.session.add(user)
