@@ -58,13 +58,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
-      const { token, user } = response.data;
-      
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
-      
+      await axios.post('/api/auth/register', userData);
+      // Registration successful, no token returned
       return { success: true };
     } catch (error) {
       return { 

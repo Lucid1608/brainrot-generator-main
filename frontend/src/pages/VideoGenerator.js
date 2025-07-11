@@ -48,7 +48,7 @@ const VideoGenerator = () => {
     setIsGenerating(true);
     
     try {
-      const response = await axios.post('/api/videos/generate', formData);
+      const response = await axios.post('/api/generate', formData);
       
       if (response.data.success) {
         setGeneratedVideo(response.data.video);

@@ -54,8 +54,8 @@ const Register = () => {
       });
       
       if (result.success) {
-        toast.success('Registration successful! Welcome to Brainrot Generator!');
-        navigate('/dashboard');
+        toast.success('Registration successful! Please log in.');
+        navigate('/login');
       } else {
         toast.error(result.error);
       }
