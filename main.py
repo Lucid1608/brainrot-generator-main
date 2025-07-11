@@ -74,7 +74,10 @@ def index():
 @main_bp.route('/static/<path:filename>')
 def serve_static(filename):
     """Serve static files from React build"""
-    return send_from_directory('frontend/build/static', filename)
+    print(f"Serving static file: {filename}")  # Debug log
+    import os
+    static_dir = os.path.join(os.getcwd(), 'frontend', 'build', 'static')
+    return send_from_directory(static_dir, filename)
 
 @main_bp.route('/<path:path>')
 def serve_react(path):
