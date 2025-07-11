@@ -11,7 +11,7 @@ from typing import List, Dict, Any
 
 # Configuration
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
-SPEECHIFY_API_KEY = os.getenv('SPEECHIFY_API_KEY')
+SPEECHIFY_API_KEY = os.getenv('SPEECHIFY_API_KEY', '').strip()
 SPEECHIFY_API_URL = 'https://api.sws.speechify.com/v1/audio/speech'
 
 # Voice IDs for different characters
@@ -32,7 +32,7 @@ async def get_available_voices():
         raise Exception("SPEECHIFY_API_KEY not configured")
     
     headers = {
-        'X-API-Key': SPEECHIFY_API_KEY
+        'Authorization': f'Bearer {SPEECHIFY_API_KEY}'
     }
     
     async with aiohttp.ClientSession() as session:
@@ -88,13 +88,16 @@ async def generate_audio(voice_id: str, person: str, line: str, index: int, outp
     if not SPEECHIFY_API_KEY:
         raise Exception("SPEECHIFY_API_KEY not configured")
     
+    # Debug: Check API key (first 10 characters)
+    print(f"Using Speechify API key: {SPEECHIFY_API_KEY[:10]}...")
+    
     # Use a default voice if the specific voice_id is not set
     if not voice_id or voice_id == 'your_joe_rogan_voice_id':
         voice_id = 'en_us_002'  # Default voice
     
     headers = {
         'Content-Type': 'application/json',
-        'X-API-Key': SPEECHIFY_API_KEY
+        'Authorization': f'Bearer {SPEECHIFY_API_KEY}'
     }
     
     payload = {
