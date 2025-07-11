@@ -26,6 +26,24 @@ VOICE_IDS = {
     'JORDAN_PETERSON': os.getenv('JORDAN_PETERSON_VOICE_ID'),
 }
 
+async def get_available_voices():
+    """Get available voices from Speechify API"""
+    if not SPEECHIFY_API_KEY:
+        raise Exception("SPEECHIFY_API_KEY not configured")
+    
+    headers = {
+        'X-API-Key': SPEECHIFY_API_KEY
+    }
+    
+    async with aiohttp.ClientSession() as session:
+        async with session.get('https://api.sws.speechify.com/v1/voices', headers=headers) as response:
+            if response.status != 200:
+                error_text = await response.text()
+                raise Exception(f"Failed to get voices: {response.status} - {error_text}")
+            
+            data = await response.json()
+            return data.get('voices', [])
+
 async def generate_transcript(topic: str, agent_a: str, agent_b: str) -> List[Dict[str, str]]:
     """Generate AI conversation transcript using Groq"""
     if not GROQ_API_KEY:
@@ -70,13 +88,17 @@ async def generate_audio(voice_id: str, person: str, line: str, index: int, outp
     if not SPEECHIFY_API_KEY:
         raise Exception("SPEECHIFY_API_KEY not configured")
     
+    # Use a default voice if the specific voice_id is not set
+    if not voice_id or voice_id == 'your_joe_rogan_voice_id':
+        voice_id = 'en_us_002'  # Default voice
+    
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {SPEECHIFY_API_KEY}'
+        'X-API-Key': SPEECHIFY_API_KEY
     }
     
     payload = {
-        'input': f'<speak>{line}</speak>',
+        'input': line,
         'voice_id': voice_id,
         'audio_format': 'mp3'
     }
@@ -84,7 +106,8 @@ async def generate_audio(voice_id: str, person: str, line: str, index: int, outp
     async with aiohttp.ClientSession() as session:
         async with session.post(SPEECHIFY_API_URL, headers=headers, json=payload) as response:
             if response.status != 200:
-                raise Exception(f"Speechify API error: {response.status}")
+                error_text = await response.text()
+                raise Exception(f"Speechify API error: {response.status} - {error_text}")
             
             data = await response.json()
             if not data.get('audio_data'):
@@ -150,6 +173,18 @@ async def run_local_video_generation(filter=False, voice='en_us_002', background
     os.makedirs(voice_dir, exist_ok=True)
     
     try:
+        # Get available voices first
+        print("Getting available voices...")
+        try:
+            available_voices = await get_available_voices()
+            print(f"Found {len(available_voices)} available voices")
+            
+            # Use first available voice as fallback
+            fallback_voice = available_voices[0]['voice_id'] if available_voices else 'en_us_002'
+        except Exception as e:
+            print(f"Warning: Could not get available voices: {e}")
+            fallback_voice = 'en_us_002'
+        
         # Generate transcript using AI
         print("Generating transcript...")
         transcript = await generate_transcript(story, 'JOE_ROGAN', 'BEN_SHAPIRO')
@@ -160,11 +195,15 @@ async def run_local_video_generation(filter=False, voice='en_us_002', background
         for i, entry in enumerate(transcript):
             agent_id = entry['agentId']
             text = entry['text']
-            voice_id = VOICE_IDS.get(agent_id, VOICE_IDS['JORDAN_PETERSON'])
+            voice_id = VOICE_IDS.get(agent_id, fallback_voice)
             
-            if voice_id:
-                audio_path = await generate_audio(voice_id, agent_id, text, i, voice_dir)
-                audio_files.append(audio_path)
+            # Use fallback if voice_id is not set or is placeholder
+            if not voice_id or voice_id.startswith('your_') or voice_id == 'your_joe_rogan_voice_id':
+                voice_id = fallback_voice
+            
+            print(f"Generating audio for {agent_id} with voice {voice_id}")
+            audio_path = await generate_audio(voice_id, agent_id, text, i, voice_dir)
+            audio_files.append(audio_path)
         
         # Create final video
         print("Creating video...")
