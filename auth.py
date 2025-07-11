@@ -7,7 +7,7 @@ import os
 import secrets
 import re
 from datetime import datetime, timedelta
-from app import db
+from extensions import db
 from models import User, EmailVerification, PasswordReset, UserSession, UsageLog
 from utils import send_email, log_usage
 

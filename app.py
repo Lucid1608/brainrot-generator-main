@@ -1,20 +1,11 @@
 from flask import Flask, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_migrate import Migrate
 from flask_cors import CORS
-from flask_mail import Mail
 import os
 from dotenv import load_dotenv
+from extensions import db, login_manager, migrate, mail
 
 # Load environment variables
 load_dotenv()
-
-# Initialize extensions
-db = SQLAlchemy()
-login_manager = LoginManager()
-migrate = Migrate()
-mail = Mail()
 
 def create_app():
     """Application factory pattern"""
