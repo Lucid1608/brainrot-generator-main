@@ -371,4 +371,61 @@ def get_current_user():
             'is_verified': current_user.is_verified,
             'subscription_plan': current_user.subscription_plan
         }
-    }), 200 
+    }), 200
+
+@api_bp.route('/user/stats', methods=['GET'])
+@login_required
+def get_user_stats():
+    """Get user statistics for dashboard"""
+    try:
+        # Get usage stats
+        usage_stats = get_user_usage_stats(current_user.id)
+        
+        # Get plan limits
+        plan_limits = current_user.get_plan_limits()
+        
+        # Count total videos
+        total_videos = Video.query.filter_by(user_id=current_user.id).count()
+        
+        # Count videos this month
+        from datetime import datetime, timedelta
+        first_day_of_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        videos_this_month = Video.query.filter(
+            Video.user_id == current_user.id,
+            Video.created_at >= first_day_of_month
+        ).count()
+        
+        return jsonify({
+            'totalVideos': total_videos,
+            'videosThisMonth': videos_this_month,
+            'planUsed': current_user.videos_created_this_month,
+            'planLimit': plan_limits.get('videos_per_month', 3),
+            'planName': current_user.subscription_plan
+        }), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting user stats: {e}")
+        return jsonify({'error': 'Failed to get user stats'}), 500
+
+@api_bp.route('/videos/dashboard', methods=['GET'])
+@login_required
+def get_user_videos_dashboard():
+    """Get user's videos for dashboard (session auth)"""
+    limit = request.args.get('limit', 5, type=int)
+    
+    videos = Video.query.filter_by(user_id=current_user.id)\
+        .order_by(Video.created_at.desc())\
+        .limit(limit)\
+        .all()
+    
+    return jsonify({
+        'videos': [{
+            'id': video.id,
+            'title': video.title,
+            'status': video.status,
+            'created_at': video.created_at.isoformat(),
+            'completed_at': video.completed_at.isoformat() if video.completed_at else None,
+            'duration': video.duration,
+            'file_size': video.file_size,
+            'download_url': f"/api/videos/{video.id}/download" if video.status == 'completed' else None
+        } for video in videos]
+    }) 

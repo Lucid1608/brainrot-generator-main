@@ -24,7 +24,7 @@ const Dashboard = () => {
     try {
       const [statsResponse, videosResponse] = await Promise.all([
         axios.get('/api/user/stats'),
-        axios.get('/api/videos?limit=5')
+        axios.get('/api/videos/dashboard?limit=5')
       ]);
 
       setStats(statsResponse.data);
