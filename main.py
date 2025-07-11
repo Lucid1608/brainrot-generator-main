@@ -75,7 +75,6 @@ def index():
 @main_bp.route('/static/<path:filename>')
 def serve_static(filename):
     """Serve static files from React build"""
-    print(f"Serving static file: {filename}")  # Debug log
     import os
     static_dir = os.path.join(os.getcwd(), 'frontend', 'build', 'static')
     return send_from_directory(static_dir, filename)
@@ -84,87 +83,6 @@ def serve_static(filename):
 def serve_react(path):
     """Serve React app for all other routes"""
     return send_from_directory('frontend/build', 'index.html')
-
-@main_bp.route('/dashboard')
-@login_required
-def dashboard():
-    """User dashboard"""
-    # Reset monthly usage if needed
-    current_user.reset_monthly_usage()
-    
-    # Get user stats
-    usage_stats = get_user_usage_stats(current_user.id)
-    
-    # Get recent videos
-    recent_videos = Video.query.filter_by(user_id=current_user.id)\
-        .order_by(Video.created_at.desc())\
-        .limit(5).all()
-    
-    # Get plan limits
-    plan_limits = current_user.get_plan_limits()
-    
-    return render_template('dashboard.html',
-                         user=current_user,
-                         usage_stats=usage_stats,
-                         recent_videos=recent_videos,
-                         plan_limits=plan_limits)
-
-@main_bp.route('/create')
-@login_required
-def create_video():
-    """Video creation page"""
-    # Check if user can create video
-    if not current_user.can_create_video():
-        flash('You have reached your monthly video limit. Please upgrade your plan.', 'warning')
-        return redirect(url_for('main.pricing'))
-    
-    return render_template('create.html')
-
-@main_bp.route('/videos')
-@login_required
-def my_videos():
-    """User's video library"""
-    page = request.args.get('page', 1, type=int)
-    videos = Video.query.filter_by(user_id=current_user.id)\
-        .order_by(Video.created_at.desc())\
-        .paginate(page=page, per_page=12, error_out=False)
-    
-    return render_template('videos.html', videos=videos)
-
-@main_bp.route('/videos/<int:video_id>')
-@login_required
-def video_detail(video_id):
-    """Video detail page"""
-    video = Video.query.filter_by(id=video_id, user_id=current_user.id).first_or_404()
-    return render_template('video_detail.html', video=video)
-
-@main_bp.route('/videos/<int:video_id>/download')
-@login_required
-def download_video(video_id):
-    """Download video"""
-    video = Video.query.filter_by(id=video_id, user_id=current_user.id).first_or_404()
-    
-    if not video.output_path or not os.path.exists(video.output_path):
-        flash('Video file not found', 'error')
-        return redirect(url_for('main.video_detail', video_id=video_id))
-    
-    return send_file(video.output_path, as_attachment=True)
-
-@main_bp.route('/videos/<int:video_id>/delete', methods=['POST'])
-@login_required
-def delete_video(video_id):
-    """Delete video"""
-    video = Video.query.filter_by(id=video_id, user_id=current_user.id).first_or_404()
-    
-    # Delete file if exists
-    if video.output_path and os.path.exists(video.output_path):
-        os.remove(video.output_path)
-    
-    db.session.delete(video)
-    db.session.commit()
-    
-    flash('Video deleted successfully', 'success')
-    return redirect(url_for('main.my_videos'))
 
 @main_bp.route('/api/voices')
 @login_required
@@ -386,35 +304,6 @@ Story:
         
         current_app.logger.error(f"Video generation error: {e}")
         return jsonify({'error': 'Video generation failed'}), 500
-
-@main_bp.route('/profile')
-@login_required
-def profile():
-    """User profile page"""
-    return render_template('profile.html', user=current_user)
-
-@main_bp.route('/profile', methods=['POST'])
-@login_required
-def update_profile():
-    """Update user profile"""
-    data = request.get_json()
-    
-    first_name = data.get('first_name', '').strip()
-    last_name = data.get('last_name', '').strip()
-    
-    current_user.first_name = first_name
-    current_user.last_name = last_name
-    
-    db.session.commit()
-    
-    return jsonify({'message': 'Profile updated successfully'}), 200
-
-@main_bp.route('/pricing')
-def pricing():
-    """Pricing page"""
-    from config import Config
-    plans = Config.SUBSCRIPTION_PLANS
-    return render_template('pricing.html', plans=plans)
 
 @main_bp.route('/upload', methods=['POST'])
 @login_required
