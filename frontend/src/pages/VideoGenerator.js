@@ -9,17 +9,14 @@ const VideoGenerator = () => {
   const [formData, setFormData] = useState({
     title: '',
     story: '',
-    voice: 'en_female_1',
+    voice: 'emily',
     background: 'default'
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState(null);
 
   const voiceOptions = [
-    { id: 'en_female_1', name: 'Female Voice 1' },
-    { id: 'en_female_2', name: 'Female Voice 2' },
-    { id: 'en_male_1', name: 'Male Voice 1' },
-    { id: 'en_male_2', name: 'Male Voice 2' }
+    { id: 'emily', name: 'Emily' }
   ];
 
   const backgroundOptions = [

@@ -87,31 +87,13 @@ def serve_react(path):
 @main_bp.route('/api/voices')
 @login_required
 def get_voices():
-    """Get available voices"""
-    voices = []
-    
-    for voice_enum in Voice:
-        voice_id = voice_enum.value
-        voice_name = VOICE_NAME_MAP.get(voice_id, voice_enum.name.replace('_', ' ').title())
-        
-        # Filter based on user's plan
-        if current_user.subscription_plan == 'free':
-            # Only show basic voices for free users
-            if voice_id in ['en_us_002', 'en_us_006', 'en_uk_001']:
-                voices.append({
-                    'id': voice_id,
-                    'name': voice_name,
-                    'category': 'Basic'
-                })
-        else:
-            # Show all voices for paid users
-            voices.append({
-                'id': voice_id,
-                'name': voice_name,
-                'category': 'Premium'
-            })
-    
-    return jsonify(voices)
+    return jsonify([
+        {
+            "voice_id": "emily",
+            "name": "Emily",
+            "description": "Default voice"
+        }
+    ])
 
 @main_bp.route('/api/backgrounds')
 @login_required

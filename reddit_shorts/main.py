@@ -16,14 +16,14 @@ SPEECHIFY_API_URL = 'https://api.sws.speechify.com/v1/audio/speech'
 
 # Voice IDs for different characters
 VOICE_IDS = {
-    'JOE_ROGAN': os.getenv('JOE_ROGAN_VOICE_ID'),
-    'BARACK_OBAMA': os.getenv('BARACK_OBAMA_VOICE_ID'),
-    'BEN_SHAPIRO': os.getenv('BEN_SHAPIRO_VOICE_ID'),
-    'DONALD_TRUMP': os.getenv('DONALD_TRUMP_VOICE_ID'),
-    'JOE_BIDEN': os.getenv('JOE_BIDEN_VOICE_ID'),
-    'KAMALA_HARRIS': os.getenv('KAMALA_HARRIS_VOICE_ID'),
-    'ANDREW_TATE': os.getenv('ANDREW_TATE_VOICE_ID'),
-    'JORDAN_PETERSON': os.getenv('JORDAN_PETERSON_VOICE_ID'),
+    'JOE_ROGAN': 'emily',
+    'BARACK_OBAMA': 'emily',
+    'BEN_SHAPIRO': 'emily',
+    'DONALD_TRUMP': 'emily',
+    'JOE_BIDEN': 'emily',
+    'KAMALA_HARRIS': 'emily',
+    'ANDREW_TATE': 'emily',
+    'JORDAN_PETERSON': 'emily',
 }
 
 async def get_available_voices():
