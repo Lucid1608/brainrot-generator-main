@@ -1,13 +1,32 @@
 from flask import Blueprint, request, jsonify, current_app, g
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, login_user, logout_user
 from functools import wraps
 import os
+import re
+import secrets
 from datetime import datetime
 from models import db, User, Video, APIKey, UsageLog
 from utils import log_usage, get_user_usage_stats, validate_file_upload, get_storage_path
 from reddit_shorts.main import run_local_video_generation
 
 api_bp = Blueprint('api', __name__)
+
+def is_valid_email(email):
+    """Basic email validation"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+def is_valid_password(password):
+    """Password validation"""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter"
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter"
+    if not re.search(r'\d', password):
+        return False, "Password must contain at least one number"
+    return True, "Password is valid"
 
 def require_api_key(f):
     """Decorator to require API key authentication"""
@@ -232,4 +251,123 @@ def get_usage():
             'name': user.subscription_plan,
             'limits': plan_limits
         }
-    }) 
+    })
+
+@api_bp.route('/auth/register', methods=['POST'])
+def register():
+    """User registration endpoint"""
+    data = request.get_json()
+    
+    # Validate input
+    email = data.get('email', '').strip().lower()
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    first_name = data.get('first_name', '').strip()
+    last_name = data.get('last_name', '').strip()
+    
+    # Validation
+    if not email or not username or not password:
+        return jsonify({'error': 'All fields are required'}), 400
+    
+    if not is_valid_email(email):
+        return jsonify({'error': 'Invalid email format'}), 400
+    
+    is_valid, password_error = is_valid_password(password)
+    if not is_valid:
+        return jsonify({'error': password_error}), 400
+    
+    if len(username) < 3 or len(username) > 20:
+        return jsonify({'error': 'Username must be between 3 and 20 characters'}), 400
+    
+    # Check if user already exists
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already registered'}), 400
+    
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already taken'}), 400
+    
+    # Create user
+    user = User()
+    user.email = email
+    user.username = username
+    user.first_name = first_name
+    user.last_name = last_name
+    user.set_password(password)
+    
+    db.session.add(user)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Registration successful! You can now log in.',
+        'user_id': user.id
+    }), 201
+
+@api_bp.route('/auth/login', methods=['POST'])
+def login():
+    """User login endpoint"""
+    data = request.get_json()
+    
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    remember = data.get('remember', False)
+    
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required'}), 400
+    
+    user = User.query.filter_by(email=email).first()
+    
+    if user is None or not user.check_password(password):
+        return jsonify({'error': 'Invalid email or password'}), 401
+    
+    if not user.is_active:
+        return jsonify({'error': 'Account is deactivated'}), 401
+    
+    # Update last login
+    user.last_login = datetime.utcnow()
+    db.session.commit()
+    
+    login_user(user, remember=remember)
+    
+    # Log usage
+    log_usage(user.id, 'login', {
+        'ip_address': request.remote_addr,
+        'user_agent': request.headers.get('User-Agent')
+    })
+    
+    return jsonify({
+        'message': 'Login successful',
+        'user': {
+            'id': user.id,
+            'email': user.email,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name
+        }
+    }), 200
+
+@api_bp.route('/auth/logout', methods=['POST'])
+@login_required
+def logout():
+    """User logout endpoint"""
+    log_usage(current_user.id, 'logout', {
+        'ip_address': request.remote_addr
+    })
+    
+    logout_user()
+    return jsonify({'message': 'Logout successful'}), 200
+
+@api_bp.route('/auth/me', methods=['GET'])
+@login_required
+def get_current_user():
+    """Get current user info"""
+    return jsonify({
+        'user': {
+            'id': current_user.id,
+            'email': current_user.email,
+            'username': current_user.username,
+            'first_name': current_user.first_name,
+            'last_name': current_user.last_name,
+            'is_verified': current_user.is_verified,
+            'subscription_plan': current_user.subscription_plan
+        }
+    }), 200 
