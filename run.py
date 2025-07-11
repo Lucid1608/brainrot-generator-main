@@ -30,4 +30,8 @@ def create_admin():
     print(f'Admin user {email} created!')
 
 if __name__ == '__main__':
+    print('--- Registered Routes ---')
+    for rule in app.url_map.iter_rules():
+        print(rule, rule.methods)
+    print('-------------------------')
     app.run(debug=True, host='0.0.0.0', port=5000) 

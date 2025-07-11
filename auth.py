@@ -29,6 +29,7 @@ def is_valid_password(password):
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
+    print('DEBUG: /auth/register endpoint was called')
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
     

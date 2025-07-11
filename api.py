@@ -255,7 +255,7 @@ def get_usage():
 
 @api_bp.route('/auth/register', methods=['POST'])
 def register():
-    """User registration endpoint"""
+    print('DEBUG: /api/auth/register endpoint was called')
     data = request.get_json()
     
     # Validate input
