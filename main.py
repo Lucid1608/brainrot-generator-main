@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app, send_file
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app, send_file, send_from_directory
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
@@ -68,10 +68,13 @@ VOICE_NAME_MAP = {
 
 @main_bp.route('/')
 def index():
-    """Landing page"""
-    if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
-    return render_template('index.html')
+    """Serve React app"""
+    return send_from_directory('frontend/build', 'index.html')
+
+@main_bp.route('/<path:path>')
+def serve_react(path):
+    """Serve React app for all other routes"""
+    return send_from_directory('frontend/build', 'index.html')
 
 @main_bp.route('/dashboard')
 @login_required
