@@ -246,11 +246,14 @@ Story:
             'filter': filter_profanity,
             'voice': voice or 'en_us_002',
             'background_video': background_video,
-            'background_music': background_music
+            'background_music': background_music,
+            'title': title,
+            'story': story
         }
         
         # Generate video
-        video_path = run_local_video_generation(**params)
+        import asyncio
+        video_path = asyncio.run(run_local_video_generation(**params))
         
         if video_path and os.path.exists(video_path):
             # Update video record

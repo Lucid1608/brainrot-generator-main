@@ -27,6 +27,7 @@ def create_app():
     # File upload configuration
     app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
     app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB
+    app.config['MAX_TEXT_LENGTH'] = int(os.getenv('MAX_TEXT_LENGTH', 5000))  # 5000 characters
     
     # Initialize extensions
     db.init_app(app)
