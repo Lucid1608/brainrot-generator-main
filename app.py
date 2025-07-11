@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -57,6 +57,14 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+    
+    # Add static file serving for React build
+    @app.route('/static/<path:filename>')
+    def serve_static(filename):
+        """Serve static files from React build"""
+        import os
+        static_dir = os.path.join(os.getcwd(), 'frontend', 'build', 'static')
+        return send_from_directory(static_dir, filename)
     
     # Create upload directory if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
