@@ -71,15 +71,15 @@ def index():
     """Serve React app"""
     return send_from_directory('frontend/build', 'index.html')
 
-@main_bp.route('/<path:path>')
-def serve_react(path):
-    """Serve React app for all other routes"""
-    return send_from_directory('frontend/build', 'index.html')
-
 @main_bp.route('/static/<path:filename>')
 def serve_static(filename):
     """Serve static files from React build"""
     return send_from_directory('frontend/build/static', filename)
+
+@main_bp.route('/<path:path>')
+def serve_react(path):
+    """Serve React app for all other routes"""
+    return send_from_directory('frontend/build', 'index.html')
 
 @main_bp.route('/dashboard')
 @login_required
