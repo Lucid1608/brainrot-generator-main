@@ -5,7 +5,8 @@ import os
 import re
 import secrets
 from datetime import datetime
-from models import db, User, Video, APIKey, UsageLog
+from app import db
+from models import User, Video, APIKey, UsageLog
 from utils import log_usage, get_user_usage_stats, validate_file_upload, get_storage_path
 from reddit_shorts.main import run_local_video_generation
 

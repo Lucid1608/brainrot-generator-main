@@ -1,11 +1,14 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from werkzeug.urls import url_parse
-from datetime import datetime, timedelta
+from werkzeug.utils import secure_filename
+import os
 import secrets
 import re
-from models import db, User, EmailVerification, PasswordReset, UserSession, UsageLog
+from datetime import datetime, timedelta
+from app import db
+from models import User, EmailVerification, PasswordReset, UserSession, UsageLog
 from utils import send_email, log_usage
 
 auth_bp = Blueprint('auth', __name__)

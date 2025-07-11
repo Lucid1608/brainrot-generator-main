@@ -4,7 +4,8 @@ from werkzeug.utils import secure_filename
 import os
 import uuid
 from datetime import datetime
-from models import db, User, Video, BackgroundAsset, UsageLog
+from app import db
+from models import User, Video, BackgroundAsset, UsageLog
 from utils import log_usage, get_user_usage_stats, validate_file_upload, get_storage_path, format_file_size, generate_thumbnail
 from reddit_shorts.main import run_local_video_generation
 from reddit_shorts.tiktok_voice.src.voice import Voice
