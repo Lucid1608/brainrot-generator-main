@@ -214,8 +214,8 @@ def generate_video():
     if not title or not story:
         return jsonify({'error': 'Title and story are required'}), 400
     
-    if len(story) > current_app.config['MAX_TEXT_LENGTH']:
-        return jsonify({'error': f'Story too long. Maximum {current_app.config["MAX_TEXT_LENGTH"]} characters.'}), 400
+    if len(story) > current_app.config.get('MAX_TEXT_LENGTH', 5000):
+        return jsonify({'error': f'Story too long. Maximum {current_app.config.get("MAX_TEXT_LENGTH", 5000)} characters.'}), 400
     
     # Create video record
     video = Video()
