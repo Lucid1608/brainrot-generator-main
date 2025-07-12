@@ -1,0 +1,14 @@
+[Unit]
+Description=Brainrot Generator Flask App
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/brainrot-generator-main
+Environment=PATH=/home/ubuntu/brainrot-generator-main/venv/bin
+ExecStart=/home/ubuntu/brainrot-generator-main/venv/bin/gunicorn --workers 3 --bind unix:brainrot-generator.sock --access-logfile /var/log/brainrot-generator/access.log --error-logfile /var/log/brainrot-generator/error.log wsgi:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target 
